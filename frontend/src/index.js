@@ -4,7 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "./App";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import UploadPage from "./pages/UploadPage";
+import MediaDetail from "./pages/MediaDetail"
+import UploadPage from "./pages/UploadPage"
 import "./index.css";
 import { AuthProvider } from "./AuthContext"; // ✅ import correct
 
@@ -20,6 +21,8 @@ root.render(
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/upload" element={<UploadPage />} />
+          <Route path="/media/:id" element={<MediaDetail />} />
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>

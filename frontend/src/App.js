@@ -1,44 +1,130 @@
 /* Landing page style "Open" (Cruip-like) — Mediasens */
 import React from "react";
-// ⬆️ tout en haut de ton fichier App.js
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import UploadPage from "./pages/UploadPage";
-import Chatbot from "./components/Chatbot";
+import Chatbot from "./components/chatbot/Chatbot";
+import MediaDetail from "./pages/MediaDetail"
 
 const Container = ({ children }) => (
   <div className="max-w-6xl mx-auto px-6 md:px-8">{children}</div>
 );
 
-const Nav = () => (
-  <header className="w-full fixed top-0 left-0 z-40 bg-black/30 backdrop-blur-md border-b border-white/10">
-    <Container>
-      <nav className="h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 rounded-lg bg-gradient-to-tr from-purple-500 via-indigo-500 to-blue-500"></span>
-          <span className="text-white font-bold text-lg tracking-wide">Mediasens</span>
-        </div>
-        <ul className="hidden md:flex items-center gap-8 text-sm text-white/80">
-          <li><a href="#features" className="hover:text-white">Fonctionnalités</a></li>
-            <li><a href="/register" className="hover:text-white">S’inscrire</a></li>
-  <li><a href="/login" className="hover:text-white">Connexion</a></li>
-  <li><a href="/upload" className="hover:text-white">Module 1</a></li>
-          <li><a href="#how" className="hover:text-white">Comment ça marche</a></li>
-          <li><a href="#cta" className="hover:text-white">Commencer</a></li>
-        </ul>
-        <div className="hidden md:block">
-          <a
-            href="#cta"
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:opacity-90 transition"
-          >
-            Essayer maintenant
-          </a>
-        </div>
-      </nav>
-    </Container>
-  </header>
-);
+// Fix: Convert Nav to a proper React component with profile dropdown
+const Nav = () => {
+  const [hasAccess, setHasAccess] = React.useState(() => !!localStorage.getItem("access"));
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+  
+  React.useEffect(() => {
+    const handleStorage = () => setHasAccess(!!localStorage.getItem("access"));
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    setHasAccess(false);
+    setIsProfileOpen(false);
+    window.location.href = "/";
+  };
+
+  const handleProfile = () => {
+    setIsProfileOpen(false);
+
+    alert("Page profil ");
+  };
+
+  return (
+    <header className="w-full fixed top-0 left-0 z-40 bg-black/30 backdrop-blur-md border-b border-white/10">
+      <Container>
+        <nav className="h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-8 w-8 rounded-lg bg-gradient-to-tr from-purple-500 via-indigo-500 to-blue-500"></span>
+            <span className="text-white font-bold text-lg tracking-wide">Mediasens</span>
+          </div>
+          
+          <ul className="hidden md:flex items-center gap-8 text-sm text-white/80">
+            <li><a href="#features" className="hover:text-white">Fonctionnalités</a></li>
+
+            {!hasAccess && (
+              <>
+                <li><a href="/register" className="hover:text-white">S'inscrire</a></li>
+                <li><a href="/login" className="hover:text-white">Connexion</a></li>
+              </>
+            )}
+            {hasAccess && (
+              <>
+              <li><a href="/upload" className="hover:text-white">Upload</a></li>
+              
+              </>
+            )}
+            
+            <li><a href="#how" className="hover:text-white">Comment ça marche</a></li>
+            <li><a href="#cta" className="hover:text-white">Commencer</a></li>
+          </ul>
+
+          <div className="flex items-center gap-4">
+            {hasAccess ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
+                    U
+                  </div>
+                  <span className="text-white text-sm hidden md:block">Profil</span>
+                  <svg className="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Profile Dropdown */}
+                {isProfileOpen && (
+                  <div className="absolute right-0 top-12 w-48 bg-[#0b1020] border border-white/10 rounded-lg shadow-xl py-2 z-50">
+                    <div className="px-4 py-2 border-b border-white/10">
+                      <p className="text-white text-sm font-medium">Utilisateur</p>
+                      <p className="text-white/60 text-xs">user@example.com</p>
+                    </div>
+                    
+                    <button
+                      onClick={handleProfile}
+                      className="w-full text-left px-4 py-2 text-white/80 hover:bg-white/10 transition flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Mon profil
+                    </button>
+                    
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-red-400 hover:bg-white/10 transition flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Déconnexion
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <a
+                href="#cta"
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:opacity-90 transition"
+              >
+                Essayer maintenant
+              </a>
+            )}
+          </div>
+        </nav>
+      </Container>
+    </header>
+  );
+};
 
 const Hero = () => (
   <section className="relative min-h-[88vh] flex items-center overflow-hidden bg-gradient-to-b from-[#0b1020] via-[#0a0f1c] to-black pt-20">
@@ -75,7 +161,7 @@ const Hero = () => (
             Voir les fonctionnalités
           </a>
         </div>
-        {/* Mock “browser frame” */}
+        {/* Mock "browser frame" */}
         <div className="mt-14 bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
           <div className="flex items-center gap-2 px-4 h-10 bg-white/5 border-b border-white/10">
             <span className="h-3 w-3 rounded-full bg-red-400/70" />
@@ -249,8 +335,7 @@ export default function App() {
             </>
           }
         />
+        <Route path="/media/:id" element={<MediaDetail />} />
       </Routes>
   );
 }
-
-

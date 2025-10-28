@@ -1,0 +1,71 @@
+.ai-analysis-panel {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.ai-analysis-panel h2 {
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+
+.analysis-section {
+  margin-bottom: 2rem;
+}
+
+.analysis-section h3 {
+  color: #8b5cf6;
+  margin-bottom: 1rem;
+}
+
+.objects-grid,
+.faces-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.object-item,
+.face-item {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.object-name,
+.face-item p {
+  color: #fff;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.object-confidence,
+.emotion,
+.confidence {
+  color: #888;
+  font-size: 0.875rem;
+}
+
+.audio-details {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.audio-details p {
+  color: #ccc;
+  margin-bottom: 0.5rem;
+}
+
+.scene-context {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: #ccc;
+}

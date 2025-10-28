@@ -1,0 +1,95 @@
+.advanced-insights {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.advanced-insights h2 {
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.insight-card {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.insight-card h4 {
+  color: #8b5cf6;
+  margin-bottom: 1rem;
+}
+
+.quality-bar,
+.richness-bar {
+  width: 100%;
+  height: 8px;
+  background: #333;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.quality-fill,
+.richness-fill {
+  height: 100%;
+  transition: width 0.3s;
+}
+
+.richness-fill {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.insight-card p {
+  color: #ccc;
+  margin: 0;
+}
+
+.emotion-text,
+.scene-text {
+  color: #8b5cf6;
+  font-weight: 600;
+}
+
+.recommendations {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.recommendations h3 {
+  color: #8b5cf6;
+  margin-bottom: 1rem;
+}
+
+.recommendations ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recommendations li {
+  color: #ccc;
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.recommendations li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #4ade80;
+  font-weight: bold;
+}

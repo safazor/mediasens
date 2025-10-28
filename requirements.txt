@@ -1,0 +1,41 @@
+# --- Django Core ---
+Django>=5.0,<6.0
+
+# --- REST API & Auth ---
+djangorestframework>=3.15.0
+django-filter>=24.0
+django-cors-headers>=4.3.0
+djangorestframework-simplejwt>=5.3.1
+
+# --- Machine Learning / Deep Learning ---
+tensorflow>=2.17.0
+numpy>=1.26.0
+pandas>=2.2.0
+scikit-learn>=1.5.0
+
+# --- Computer Vision ---
+opencv-python-headless>=4.10.0.84
+ultralytics>=8.2.0        # YOLO models (object detection, tracking)
+fer>=22.5.1               # Facial Emotion Recognition
+
+# --- Audio Processing ---
+librosa>=0.10.2
+SpeechRecognition>=3.10.0
+pydub>=0.25.1
+
+# --- Utilities ---
+Pillow>=10.3.0
+matplotlib>=3.9.0
+
+# --- Optional (for deployment) ---
+gunicorn>=22.0.0
+
+
+
+deepface>=0.0.86
+transformers>=4.35
+torch>=2.1
+torchvision>=0.16
+torchaudio>=2.1
+opencv-python>=4.8
+
