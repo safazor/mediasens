@@ -51,33 +51,6 @@ class MediaViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Aucun fichier reçu.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['post'])
-    def reanalyse(self, request, pk=None):
-        """Enhanced reanalysis with REAL Module 2 capabilities"""
-        media = self.get_object()
-        file = media.file
-        
-        try:
-            analyzer = AdvancedAIAnalyzer()
-            media_type, analysis = analyzer.analyze_media(file)
-            
-            media.media_type = media_type
-            media.quality_score = analysis['quality_score']
-            media.theme = analysis['theme']
-            media.tags = ', '.join(analysis['tags'][:5])
-            media.objects_detected = analysis['objects_detected']
-            media.faces_detected = analysis['faces_detected']
-            media.emotions = analysis['emotions']
-            media.scene_context = analysis['scene_context']
-            media.audio_analysis = analysis.get('audio_analysis', {})
-            media.analysis_summary = analysis['analysis_summary']
-            media.save()
-            
-        except Exception as e:
-            print(f"Reanalysis error: {e}")
-            return Response({'error': 'Reanalysis failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        return Response(MediaSerializer(media).data)
 
     @action(detail=False, methods=['get'])
     def by_theme(self, request):
@@ -115,30 +88,89 @@ class MediaViewSet(viewsets.ModelViewSet):
             })
         return emotions
 
-    @action(detail=True, methods=['post'])
-    def reanalyse(self, request, pk=None):
-        """Enhanced reanalysis with advanced AI"""
-        media = self.get_object()
-        file = media.file
+    # @action(detail=True, methods=['post'])
+    # def reanalyse(self, request, pk=None):
+    #     """Enhanced reanalysis with advanced AI"""
+    #     media = self.get_object()
+    #     file = media.file
         
-        try:
-            analysis = ai_service.analyze_media(file)
+    #     try:
+    #         analysis = ai_service.analyze_media(file)
             
-            # Update all analysis fields
-            media.media_type = analysis['media_type']
-            media.quality_score = analysis['quality_score']
-            media.theme = analysis['theme']
-            media.tags = ', '.join(analysis['tags'][:8])
-            media.objects_detected = analysis.get('objects_detected', [])
-            media.faces_detected = analysis.get('face_analysis', [])
-            media.emotions = self.extract_emotions(analysis.get('face_analysis', []))
-            media.scene_context = analysis.get('scene_analysis', {}).get('primary_scene', 'General')
-            media.audio_analysis = analysis.get('audio_features', {})
-            media.analysis_summary = analysis['summary']
-            media.ai_models_used = ', '.join(analysis['ai_models_used'])
-            media.save()
+    #         # Update all analysis fields
+    #         media.media_type = analysis['media_type']
+    #         media.quality_score = analysis['quality_score']
+    #         media.theme = analysis['theme']
+    #         media.tags = ', '.join(analysis['tags'][:8])
+    #         media.objects_detected = analysis.get('objects_detected', [])
+    #         media.faces_detected = analysis.get('face_analysis', [])
+    #         media.emotions = self.extract_emotions(analysis.get('face_analysis', []))
+    #         media.scene_context = analysis.get('scene_analysis', {}).get('primary_scene', 'General')
+    #         media.audio_analysis = analysis.get('audio_features', {})
+    #         media.analysis_summary = analysis['summary']
+    #         media.ai_models_used = ', '.join(analysis['ai_models_used'])
+    #         media.save()
             
-        except Exception as e:
-            return Response({'error': 'Reanalysis failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    #     except Exception as e:
+    #         return Response({'error': 'Reanalysis failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        return Response(MediaSerializer(media).data)
+    #     return Response(MediaSerializer(media).data)
+    
+    # Update the reanalyse method in views.py
+@action(detail=True, methods=['post'])
+def reanalyse(self, request, pk=None):
+    """Enhanced reanalysis with all AI models"""
+    media = self.get_object()
+    file = media.file
+    
+    try:
+        # Use the enhanced AI service
+        analysis = ai_service.analyze_media(file)
+        
+        # Update all analysis fields with enhanced data
+        media.media_type = analysis['media_type']
+        media.quality_score = analysis['quality_score']
+        media.theme = analysis['theme']
+        media.tags = ', '.join(analysis['tags'][:8])
+        
+        # Enhanced object detection
+        media.objects_detected = analysis.get('objects_detected', [])
+        
+        # Enhanced face analysis
+        media.faces_detected = analysis.get('face_analysis', [])
+        
+        # Enhanced emotions
+        media.emotions = self.extract_enhanced_emotions(analysis.get('face_analysis', []))
+        
+        # Enhanced scene context
+        scene_data = analysis.get('scene_analysis', {})
+        media.scene_context = scene_data.get('primary_scene', 'General')
+        
+        # Enhanced audio analysis
+        media.audio_analysis = analysis.get('audio_analysis', {})
+        
+        # Enhanced summary
+        media.analysis_summary = analysis['summary']
+        
+        # AI models used
+        media.ai_models_used = ', '.join(analysis['ai_models_used'])
+        
+        media.save()
+        
+    except Exception as e:
+        print(f"Enhanced reanalysis failed: {e}")
+        return Response({'error': 'Reanalysis failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return Response(MediaSerializer(media).data)
+
+def extract_enhanced_emotions(self, face_analysis):
+    """Extract enhanced emotions from face analysis"""
+    emotions = []
+    for face in face_analysis:
+        emotions.append({
+            'emotion': face.get('emotion', 'neutral'),
+            'confidence': face.get('confidence', 0.5),
+            'gender': face.get('gender', 'unknown'),
+            'age': face.get('age', 'unknown')
+        })
+    return emotions

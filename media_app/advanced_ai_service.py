@@ -10,46 +10,171 @@ import json
 from datetime import datetime
 import random
 
+# Import additional AI libraries
+try:
+    import tensorflow as tf
+    from tensorflow.keras.applications import EfficientNetB0
+    from tensorflow.keras.applications.efficientnet import preprocess_input as eff_preprocess
+    TENSORFLOW_AVAILABLE = True
+except ImportError:
+    print("❌ TensorFlow not available")
+    TENSORFLOW_AVAILABLE = False
+
+try:
+    from deepface import DeepFace
+    DEEPFACE_AVAILABLE = True
+except ImportError:
+    print("❌ DeepFace not available")
+    DEEPFACE_AVAILABLE = False
+
+try:
+    from transformers import pipeline, AutoImageProcessor, AutoModelForImageClassification
+    from transformers import WhisperProcessor, WhisperForConditionalGeneration
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    print("❌ Transformers not available")
+    TRANSFORMERS_AVAILABLE = False
+
+try:
+    import torch
+    import torchvision
+    TORCH_AVAILABLE = True
+except ImportError:
+    print("❌ PyTorch not available")
+    TORCH_AVAILABLE = False
+
+try:
+    from pydub import AudioSegment
+    PYDUB_AVAILABLE = True
+except ImportError:
+    print("❌ PyDub not available")
+    PYDUB_AVAILABLE = False
+
 class AdvancedAIService:
     def __init__(self):
         self.models_loaded = False
+        self.ai_models = {}
         self.load_models()
     
     def load_models(self):
-        """Load available AI models"""
+        """Load all available AI models"""
         try:
-            # Try to load YOLO for object detection
-            try:
-                from ultralytics import YOLO
-                self.yolo_model = YOLO('yolov8n.pt')
-                print("✅ YOLOv8 model loaded")
-                self.yolo_available = True
-            except ImportError:
-                print("❌ YOLOv8 not available, using OpenCV detection")
-                self.yolo_available = False
+            print("🚀 Loading AI models...")
             
-            print("🎯 AI models loaded successfully")
+            # 🎯 Computer Vision Models
+            self._load_computer_vision_models()
+            
+            # 😊 Facial Analysis Models
+            self._load_facial_analysis_models()
+            
+            # 🎵 Audio Analysis Models
+            self._load_audio_analysis_models()
+            
+            # 🏞️ Scene Understanding Models
+            self._load_scene_understanding_models()
+            
+            print("✅ All AI models loaded successfully")
             self.models_loaded = True
             
         except Exception as e:
             print(f"❌ Error loading AI models: {e}")
             self.models_loaded = False
     
+    def _load_computer_vision_models(self):
+        """Load computer vision models"""
+        # YOLO for object detection
+        try:
+            from ultralytics import YOLO
+            self.ai_models['yolo'] = YOLO('yolov8n.pt')
+            print("✅ YOLOv8 model loaded")
+        except ImportError:
+            print("❌ YOLOv8 not available")
+            self.ai_models['yolo'] = None
+        
+        # TensorFlow EfficientNet for image classification
+        if TENSORFLOW_AVAILABLE:
+            try:
+                self.ai_models['efficientnet'] = EfficientNetB0(weights='imagenet')
+                print("✅ EfficientNet model loaded")
+            except Exception as e:
+                print(f"❌ EfficientNet loading error: {e}")
+        
+        # Transformers for advanced image classification
+        if TRANSFORMERS_AVAILABLE:
+            try:
+                self.ai_models['image_processor'] = AutoImageProcessor.from_pretrained("microsoft/resnet-50")
+                self.ai_models['image_classifier'] = AutoModelForImageClassification.from_pretrained("microsoft/resnet-50")
+                print("✅ ResNet-50 transformer model loaded")
+            except Exception as e:
+                print(f"❌ Transformer image model loading error: {e}")
+    
+    def _load_facial_analysis_models(self):
+        """Load facial analysis models"""
+        if DEEPFACE_AVAILABLE:
+            try:
+                # DeepFace will load models on-demand
+                print("✅ DeepFace available for facial analysis")
+            except Exception as e:
+                print(f"❌ DeepFace loading error: {e}")
+        
+        # OpenCV face detection as fallback
+        try:
+            self.ai_models['face_cascade'] = cv2.CascadeClassifier(
+                cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+            )
+            print("✅ OpenCV face detection loaded")
+        except Exception as e:
+            print(f"❌ OpenCV face detection error: {e}")
+    
+    def _load_audio_analysis_models(self):
+        """Load audio analysis models"""
+        if TRANSFORMERS_AVAILABLE:
+            try:
+                # Whisper for speech recognition
+                self.ai_models['whisper_processor'] = WhisperProcessor.from_pretrained("openai/whisper-small")
+                self.ai_models['whisper_model'] = WhisperForConditionalGeneration.from_pretrained("openai/whisper-small")
+                print("✅ Whisper speech recognition model loaded")
+            except Exception as e:
+                print(f"❌ Whisper loading error: {e}")
+        
+        # Audio emotion analysis pipeline
+        if TRANSFORMERS_AVAILABLE:
+            try:
+                self.ai_models['audio_emotion'] = pipeline(
+                    "audio-classification", 
+                    model="superb/wav2vec2-base-superb-er"
+                )
+                print("✅ Audio emotion recognition model loaded")
+            except Exception as e:
+                print(f"❌ Audio emotion model loading error: {e}")
+    
+    def _load_scene_understanding_models(self):
+        """Load scene understanding models"""
+        if TRANSFORMERS_AVAILABLE:
+            try:
+                self.ai_models['scene_classifier'] = pipeline(
+                    "image-classification", 
+                    model="microsoft/resnet-50"
+                )
+                print("✅ Scene classification model loaded")
+            except Exception as e:
+                print(f"❌ Scene classifier loading error: {e}")
+    
     def analyze_media(self, file):
-        """Comprehensive AI analysis for all media types"""
+        """Comprehensive AI analysis using all available models"""
         filename = file.name.lower()
         
         if any(ext in filename for ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']):
-            return self.analyze_image(file)
+            return self.analyze_image_advanced(file)
         elif any(ext in filename for ext in ['.mp4', '.mov', '.avi', '.mkv', '.webm']):
-            return self.analyze_video(file)
+            return self.analyze_video_advanced(file)
         elif any(ext in filename for ext in ['.mp3', '.wav', '.m4a', '.flac', '.aac', '.ogg']):
-            return self.analyze_audio(file)
+            return self.analyze_audio_advanced(file)
         else:
             return self.get_basic_analysis(file)
     
-    def analyze_image(self, file):
-        """Advanced image analysis"""
+    def analyze_image_advanced(self, file):
+        """Advanced image analysis using multiple AI models"""
         try:
             # Save temporary file
             tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
@@ -63,50 +188,59 @@ class AdvancedAIService:
             if img is None:
                 return self.get_basic_analysis(file)
             
-            # Comprehensive analysis
+            # Run comprehensive analysis with all available models
             analysis = {
                 'media_type': 'image',
-                'quality_metrics': self.analyze_image_quality(img),
-                'objects_detected': self.detect_objects_advanced(img_path),
-                'face_analysis': self.detect_faces_opencv(img),
-                'color_analysis': self.analyze_colors(img),
+                'quality_metrics': self.analyze_image_quality_advanced(img),
+                'objects_detected': self.detect_objects_multimodel(img_path),
+                'face_analysis': self.analyze_faces_deepface(img),
+                'scene_analysis': self.analyze_scene_transformers(img_path),
+                'color_analysis': self.analyze_colors_advanced(img),
+                'image_classification': self.classify_image_tensorflow(img_path),
                 'technical_metadata': self.get_technical_metadata(img),
-                'ai_models_used': ['OpenCV', 'YOLOv8' if self.yolo_available else 'HaarCascade'],
+                'ai_models_used': self.get_used_models(),
                 'analysis_timestamp': datetime.now().isoformat()
             }
             
             # Generate comprehensive summary and tags
-            analysis['summary'] = self.generate_image_summary(analysis)
-            analysis['tags'] = self.generate_image_tags(analysis)
-            analysis['theme'] = self.determine_theme(analysis)
+            analysis['summary'] = self.generate_comprehensive_summary(analysis)
+            analysis['tags'] = self.generate_advanced_tags(analysis)
+            analysis['theme'] = self.determine_advanced_theme(analysis)
             analysis['quality_score'] = analysis['quality_metrics']['overall_score']
             
             os.unlink(img_path)
             return analysis
             
         except Exception as e:
-            print(f"Image analysis error: {e}")
+            print(f"Advanced image analysis error: {e}")
             return self.get_basic_analysis(file)
     
-    def detect_objects_advanced(self, image_path):
-        """Object detection using available models"""
+    def detect_objects_multimodel(self, image_path):
+        """Object detection using multiple models (YOLO + Transformers)"""
         objects = []
         
-        # Try YOLO first
-        if self.yolo_available:
-            objects = self.detect_objects_yolo(image_path)
+        # YOLO detection
+        if self.ai_models.get('yolo'):
+            objects.extend(self.detect_objects_yolo(image_path))
         
-        # If no objects detected with YOLO, use OpenCV-based detection
-        if not objects:
-            objects = self.detect_objects_opencv(image_path)
+        # Transformer-based detection
+        if self.ai_models.get('scene_classifier'):
+            objects.extend(self.detect_objects_transformers(image_path))
         
-        return objects
+        # Remove duplicates and sort by confidence
+        unique_objects = {}
+        for obj in objects:
+            label = obj['label']
+            if label not in unique_objects or obj['confidence'] > unique_objects[label]['confidence']:
+                unique_objects[label] = obj
+        
+        return sorted(unique_objects.values(), key=lambda x: x['confidence'], reverse=True)[:15]
     
     def detect_objects_yolo(self, image_path):
         """Object detection with YOLOv8"""
         objects = []
         try:
-            results = self.yolo_model(image_path)
+            results = self.ai_models['yolo'](image_path)
             
             for result in results:
                 boxes = result.boxes
@@ -123,399 +257,586 @@ class AdvancedAIService:
                                 'label': class_name,
                                 'confidence': round(confidence, 3),
                                 'bbox': [round(x1), round(y1), round(x2), round(y2)],
-                                'area': round((x2 - x1) * (y2 - y1))
+                                'area': round((x2 - x1) * (y2 - y1)),
+                                'model': 'YOLOv8'
                             })
             
-            # Sort by confidence
-            objects.sort(key=lambda x: x['confidence'], reverse=True)
-            return objects[:10]  # Return top 10 objects
+            return objects
             
         except Exception as e:
             print(f"YOLO detection error: {e}")
             return []
     
-    def detect_objects_opencv(self, image_path):
-        """Fallback object detection using OpenCV"""
+    def detect_objects_transformers(self, image_path):
+        """Object/scene detection using transformer models"""
         objects = []
         try:
-            img = cv2.imread(image_path)
-            if img is None:
-                return objects
+            classifier = self.ai_models['scene_classifier']
+            results = classifier(image_path)
             
-            # Color-based object detection
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            
-            # Define color ranges for common objects
-            color_detections = [
-                ('red_object', np.array([0, 120, 70]), np.array([10, 255, 255])),
-                ('blue_object', np.array([100, 150, 0]), np.array([140, 255, 255])),
-                ('green_object', np.array([40, 40, 40]), np.array([80, 255, 255])),
-                ('yellow_object', np.array([20, 100, 100]), np.array([30, 255, 255])),
-            ]
-            
-            for color_name, lower, upper in color_detections:
-                mask = cv2.inRange(hsv, lower, upper)
-                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                
-                for contour in contours:
-                    area = cv2.contourArea(contour)
-                    if area > 1000:  # Minimum area threshold
-                        x, y, w, h = cv2.boundingRect(contour)
-                        objects.append({
-                            'label': color_name,
-                            'confidence': 0.6,
-                            'bbox': [x, y, x + w, y + h],
-                            'area': area
-                        })
+            for result in results[:5]:  # Top 5 predictions
+                objects.append({
+                    'label': result['label'],
+                    'confidence': round(result['score'], 3),
+                    'bbox': None,  # Transformers don't provide bbox
+                    'area': 0,
+                    'model': 'Transformers'
+                })
             
             return objects
             
         except Exception as e:
-            print(f"OpenCV object detection error: {e}")
+            print(f"Transformer detection error: {e}")
             return []
     
-    def detect_faces_opencv(self, img):
-        """Face detection using OpenCV Haar cascades"""
+    def analyze_faces_deepface(self, img):
+        """Advanced facial analysis using DeepFace"""
         faces = []
+        
+        if not DEEPFACE_AVAILABLE:
+            return self.detect_faces_opencv(img)
+        
         try:
-            face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            # Convert BGR to RGB for DeepFace
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             
-            # Detect faces
-            detected_faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+            # Analyze faces with multiple attributes
+            analyses = DeepFace.analyze(
+                img_path=img_rgb,
+                actions=['age', 'gender', 'emotion', 'race'],
+                enforce_detection=False,
+                detector_backend='opencv'
+            )
             
-            for (x, y, w, h) in detected_faces:
-                # Simple emotion estimation based on facial proportions
-                emotion = self.estimate_emotion(img, x, y, w, h)
-                
-                faces.append({
-                    'age': self.estimate_age(w, h),
-                    'gender': self.estimate_gender(w, h),
-                    'emotion': emotion,
-                    'confidence': 0.7,
-                    'region': {'x': x, 'y': y, 'w': w, 'h': h}
-                })
+            for analysis in analyses:
+                face_data = {
+                    'age': analysis.get('age', 'Unknown'),
+                    'gender': analysis.get('dominant_gender', 'Unknown'),
+                    'emotion': analysis.get('dominant_emotion', 'neutral'),
+                    'race': analysis.get('dominant_race', 'Unknown'),
+                    'confidence': analysis.get('face_confidence', 0.7),
+                    'region': analysis.get('region', {}),
+                    'emotion_breakdown': analysis.get('emotion', {}),
+                    'model': 'DeepFace'
+                }
+                faces.append(face_data)
             
             return faces
             
         except Exception as e:
-            print(f"Face detection error: {e}")
-            return []
+            print(f"DeepFace analysis error: {e}")
+            return self.detect_faces_opencv(img)
     
-    def estimate_emotion(self, img, x, y, w, h):
-        """Simple emotion estimation based on facial features"""
+    def analyze_scene_transformers(self, image_path):
+        """Advanced scene analysis using transformers"""
         try:
-            # Crop face region
-            face_region = img[y:y+h, x:x+w]
-            if face_region.size == 0:
-                return "neutral"
+            if not self.ai_models.get('scene_classifier'):
+                return {'primary_scene': 'General', 'confidence': 0.5}
             
-            # Convert to grayscale
-            gray_face = cv2.cvtColor(face_region, cv2.COLOR_BGR2GRAY)
-            
-            # Analyze brightness and contrast for emotion clues
-            brightness = np.mean(gray_face)
-            contrast = np.std(gray_face)
-            
-            if brightness > 150 and contrast > 50:
-                return "happy"
-            elif brightness < 100 and contrast < 30:
-                return "sad"
-            elif contrast > 60:
-                return "surprised"
-            else:
-                return "neutral"
-                
-        except:
-            return "neutral"
-    
-    def estimate_age(self, face_width, face_height):
-        """Simple age estimation based on face size"""
-        face_size = face_width * face_height
-        if face_size < 5000:
-            return "child"
-        elif face_size < 15000:
-            return "young adult"
-        else:
-            return "adult"
-    
-    def estimate_gender(self, face_width, face_height):
-        """Simple gender estimation based on face proportions"""
-        aspect_ratio = face_width / face_height
-        return "female" if aspect_ratio > 0.85 else "male"
-    
-    def analyze_image_quality(self, img):
-        """Comprehensive image quality analysis"""
-        try:
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            height, width = img.shape[:2]
-            
-            # Sharpness (variance of Laplacian)
-            sharpness = cv2.Laplacian(gray, cv2.CV_64F).var()
-            
-            # Brightness
-            brightness = np.mean(gray) / 255.0
-            
-            # Contrast
-            contrast = np.std(gray) / 255.0
-            
-            # Noise estimation
-            noise = self.estimate_noise(gray)
-            
-            # Composition score (rule of thirds)
-            composition = self.analyze_composition(img)
-            
-            # Overall quality score
-            overall_score = (
-                min(sharpness / 500, 1.0) * 0.3 +
-                brightness * 0.2 +
-                contrast * 0.2 +
-                (1 - noise) * 0.2 +
-                composition * 0.1
-            )
+            classifier = self.ai_models['scene_classifier']
+            results = classifier(image_path)
             
             return {
-                'sharpness': round(float(sharpness), 2),
-                'brightness': round(float(brightness), 2),
-                'contrast': round(float(contrast), 2),
-                'noise_level': round(float(noise), 2),
-                'composition_score': round(float(composition), 2),
-                'resolution': f"{width}x{height}",
-                'overall_score': round(float(overall_score), 2)
+                'primary_scene': results[0]['label'],
+                'confidence': round(results[0]['score'], 3),
+                'alternative_scenes': [
+                    {'scene': r['label'], 'confidence': round(r['score'], 3)}
+                    for r in results[1:4]
+                ],
+                'model': 'Transformers'
             }
             
         except Exception as e:
-            print(f"Quality analysis error: {e}")
-            return {
-                'sharpness': 0.5, 'brightness': 0.5, 'contrast': 0.5,
-                'noise_level': 0.5, 'composition_score': 0.5,
-                'resolution': 'unknown', 'overall_score': 0.5
-            }
+            print(f"Scene analysis error: {e}")
+            return {'primary_scene': 'General', 'confidence': 0.5}
     
-    def estimate_noise(self, gray_img):
-        """Estimate image noise level"""
+    def classify_image_tensorflow(self, image_path):
+        """Image classification using TensorFlow models"""
         try:
-            # Use variance of the Laplacian to estimate noise
-            laplacian_var = cv2.Laplacian(gray_img, cv2.CV_64F).var()
-            # Normalize to 0-1 range (higher means more noise)
-            noise_level = min(laplacian_var / 1000, 1.0)
-            return noise_level
-        except:
-            return 0.5
-    
-    def analyze_composition(self, img):
-        """Analyze image composition (rule of thirds)"""
-        try:
-            height, width = img.shape[:2]
+            if not TENSORFLOW_AVAILABLE:
+                return {}
             
-            # Calculate key points for rule of thirds
-            third_x = width // 3
-            third_y = height // 3
+            # Load and preprocess image
+            img = tf.keras.preprocessing.image.load_img(image_path, target_size=(224, 224))
+            img_array = tf.keras.preprocessing.image.img_to_array(img)
+            img_array = tf.expand_dims(img_array, 0)
+            img_array = eff_preprocess(img_array)
             
-            # Simple composition score based on image center
-            center_x, center_y = width // 2, height // 2
-            dist_from_center = np.sqrt((center_x - third_x*2)**2 + (center_y - third_y*2)**2)
-            max_dist = np.sqrt((width//2)**2 + (height//2)**2)
-            
-            composition_score = 1.0 - (dist_from_center / max_dist)
-            return composition_score
-        except:
-            return 0.5
-    
-    def analyze_colors(self, img):
-        """Analyze color distribution"""
-        try:
-            # Convert to HSV for better color analysis
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            
-            # Calculate color histograms
-            h_hist = cv2.calcHist([hsv], [0], None, [180], [0, 180])
-            s_hist = cv2.calcHist([hsv], [1], None, [256], [0, 256])
-            v_hist = cv2.calcHist([hsv], [2], None, [256], [0, 256])
-            
-            # Find dominant colors
-            dominant_hue = np.argmax(h_hist)
-            saturation_mean = np.mean(s_hist)
-            brightness_mean = np.mean(v_hist)
-            
-            # Colorfulness metric
-            lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-            a_std, b_std = np.std(lab[:,:,1]), np.std(lab[:,:,2])
-            colorfulness = np.sqrt(a_std**2 + b_std**2)
+            # Predict
+            predictions = self.ai_models['efficientnet'](img_array)
+            decoded_predictions = tf.keras.applications.efficientnet.decode_predictions(
+                predictions.numpy()
+            )[0]
             
             return {
-                'dominant_hue': int(dominant_hue),
-                'saturation': float(saturation_mean),
-                'brightness': float(brightness_mean),
-                'colorfulness': float(colorfulness),
-                'color_palette': self.extract_color_palette(img)
+                'predictions': [
+                    {'label': label, 'confidence': round(float(score), 4)}
+                    for (_, label, score) in decoded_predictions[:5]
+                ],
+                'model': 'EfficientNet'
             }
+            
         except Exception as e:
-            print(f"Color analysis error: {e}")
+            print(f"TensorFlow classification error: {e}")
             return {}
     
-    def extract_color_palette(self, img, n_colors=5):
-        """Extract dominant color palette"""
+    def analyze_audio_advanced(self, file):
+        """Advanced audio analysis with multiple models"""
         try:
-            # Resize image for faster processing
-            small_img = cv2.resize(img, (100, 100))
-            pixels = small_img.reshape(-1, 3)
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
+            for chunk in file.chunks():
+                tmp.write(chunk)
+            tmp.close()
+            audio_path = tmp.name
             
-            # Use k-means to find dominant colors
-            criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 1.0)
-            _, labels, centers = cv2.kmeans(
-                pixels.astype(np.float32), n_colors, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS
-            )
+            # Convert to WAV if needed
+            if PYDUB_AVAILABLE and not audio_path.lower().endswith('.wav'):
+                audio = AudioSegment.from_file(audio_path)
+                wav_path = audio_path + '.wav'
+                audio.export(wav_path, format='wav')
+                os.unlink(audio_path)
+                audio_path = wav_path
             
-            # Convert to hex colors
-            palette = []
-            for color in centers:
-                b, g, r = color
-                hex_color = f"#{int(r):02x}{int(g):02x}{int(b):02x}"
-                palette.append(hex_color)
+            # Comprehensive audio analysis
+            analysis = {
+                'media_type': 'audio',
+                'basic_features': self.analyze_audio_features(audio_path),
+                'speech_analysis': self.analyze_speech_whisper(audio_path),
+                'emotion_analysis': self.analyze_audio_emotion(audio_path),
+                'music_analysis': self.analyze_music_features(audio_path),
+                'ai_models_used': self.get_used_models(),
+                'analysis_timestamp': datetime.now().isoformat()
+            }
             
-            return palette
+            # Generate summary and tags
+            analysis['summary'] = self.generate_audio_summary(analysis)
+            analysis['tags'] = self.generate_audio_tags(analysis)
+            analysis['theme'] = self.determine_audio_theme(analysis)
+            analysis['quality_score'] = analysis['basic_features'].get('quality_score', 0.6)
+            
+            os.unlink(audio_path)
+            return analysis
+            
+        except Exception as e:
+            print(f"Advanced audio analysis error: {e}")
+            return self.get_basic_analysis(file)
+    
+    def analyze_speech_whisper(self, audio_path):
+        """Speech recognition using Whisper"""
+        try:
+            if not self.ai_models.get('whisper_processor'):
+                return {'transcript': '', 'language': 'unknown'}
+            
+            # Load audio
+            audio, sr = librosa.load(audio_path, sr=16000)
+            
+            # Process with Whisper
+            processor = self.ai_models['whisper_processor']
+            model = self.ai_models['whisper_model']
+            
+            input_features = processor(audio, sampling_rate=sr, return_tensors="pt").input_features
+            predicted_ids = model.generate(input_features)
+            transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)
+            
+            return {
+                'transcript': transcription[0] if transcription else '',
+                'language': 'auto-detected',
+                'model': 'Whisper'
+            }
+            
+        except Exception as e:
+            print(f"Whisper speech recognition error: {e}")
+            return {'transcript': self._transcribe_audio_basic(audio_path), 'language': 'fr-FR'}
+    
+    def analyze_audio_emotion(self, audio_path):
+        """Audio emotion recognition"""
+        try:
+            if not self.ai_models.get('audio_emotion'):
+                return {'emotion': 'neutral', 'confidence': 0.5}
+            
+            classifier = self.ai_models['audio_emotion']
+            result = classifier(audio_path)
+            
+            return {
+                'emotion': result[0]['label'],
+                'confidence': round(result[0]['score'], 3),
+                'all_emotions': result[:3],
+                'model': 'Wav2Vec2'
+            }
+            
+        except Exception as e:
+            print(f"Audio emotion analysis error: {e}")
+            return {'emotion': 'neutral', 'confidence': 0.5}
+    
+    def analyze_audio_features(self, audio_path):
+        """Comprehensive audio feature extraction"""
+        try:
+            y, sr = librosa.load(audio_path, sr=22050)
+            duration = librosa.get_duration(y=y, sr=sr)
+            
+            # Advanced audio features
+            features = {
+                'duration_seconds': round(duration, 2),
+                'tempo_bpm': round(librosa.beat.beat_track(y=y, sr=sr)[0], 2),
+                'spectral_centroid': float(np.mean(librosa.feature.spectral_centroid(y=y, sr=sr))),
+                'spectral_rolloff': float(np.mean(librosa.feature.spectral_rolloff(y=y, sr=sr))),
+                'zero_crossing_rate': float(np.mean(librosa.feature.zero_crossing_rate(y))),
+                'rms_energy': float(np.mean(librosa.feature.rms(y=y))),
+                'mfcc_features': [float(x) for x in np.mean(librosa.feature.mfcc(y=y, sr=sr), axis=1)[:5]],
+                'chroma_features': [float(x) for x in np.mean(librosa.feature.chroma_stft(y=y, sr=sr), axis=1)[:3]]
+            }
+            
+            # Quality score based on audio characteristics
+            features['quality_score'] = self.calculate_audio_quality(features)
+            
+            return features
+            
+        except Exception as e:
+            print(f"Audio feature analysis error: {e}")
+            return {'duration_seconds': 0, 'quality_score': 0.5}
+    
+    def analyze_music_features(self, audio_path):
+        """Music-specific analysis"""
+        try:
+            y, sr = librosa.load(audio_path, sr=22050)
+            
+            return {
+                'key': self.estimate_key(y, sr),
+                'chord_analysis': self.analyze_chords(y, sr),
+                'beat_strength': float(np.mean(librosa.beat.beat_track(y=y, sr=sr)[1])),
+                'harmonics_percussive': self.separate_harmonics_percussive(y)
+            }
+            
+        except Exception as e:
+            print(f"Music analysis error: {e}")
+            return {}
+    
+    def analyze_video_advanced(self, file):
+        """Advanced video analysis with frame sampling and audio extraction"""
+        try:
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
+            for chunk in file.chunks():
+                tmp.write(chunk)
+            tmp.close()
+            video_path = tmp.name
+            
+            cap = cv2.VideoCapture(video_path)
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            duration = total_frames / fps if fps > 0 else 0
+            
+            # Analyze key frames
+            frame_analyses = []
+            sample_rate = max(1, total_frames // 10)
+            
+            for frame_idx in range(0, total_frames, sample_rate):
+                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                success, frame = cap.read()
+                
+                if success:
+                    frame_path = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg').name
+                    cv2.imwrite(frame_path, frame)
+                    
+                    # Analyze frame
+                    with open(frame_path, 'rb') as frame_file:
+                        frame_analysis = self.analyze_image_advanced(frame_file)
+                    
+                    frame_analyses.append(frame_analysis)
+                    os.unlink(frame_path)
+            
+            cap.release()
+            
+            # Extract and analyze audio if available
+            audio_analysis = {}
+            if PYDUB_AVAILABLE:
+                try:
+                    video = AudioSegment.from_file(video_path, "mp4")
+                    audio_path = video_path + '.wav'
+                    video.export(audio_path, format="wav")
+                    audio_analysis = self.analyze_audio_advanced(open(audio_path, 'rb'))
+                    os.unlink(audio_path)
+                except Exception as e:
+                    print(f"Video audio extraction error: {e}")
+            
+            # Aggregate results
+            analysis = self.aggregate_video_analysis(frame_analyses, audio_analysis, total_frames, fps, duration)
+            os.unlink(video_path)
+            
+            return analysis
+            
+        except Exception as e:
+            print(f"Advanced video analysis error: {e}")
+            return self.get_basic_analysis(file)
+    
+    def aggregate_video_analysis(self, frame_analyses, audio_analysis, total_frames, fps, duration):
+        """Aggregate video analysis from multiple frames"""
+        if not frame_analyses:
+            return self.get_basic_analysis(None)
+        
+        base_analysis = frame_analyses[0]
+        
+        # Aggregate objects from all frames
+        all_objects = []
+        all_faces = []
+        
+        for analysis in frame_analyses:
+            all_objects.extend(analysis.get('objects_detected', []))
+            all_faces.extend(analysis.get('face_analysis', []))
+        
+        # Remove duplicates and keep highest confidence
+        object_dict = {}
+        for obj in all_objects:
+            label = obj['label']
+            if label not in object_dict or obj['confidence'] > object_dict[label]['confidence']:
+                object_dict[label] = obj
+        
+        base_analysis['objects_detected'] = sorted(object_dict.values(), key=lambda x: x['confidence'], reverse=True)[:20]
+        base_analysis['face_analysis'] = all_faces[:10]  # Keep first 10 faces
+        
+        # Add video-specific metadata
+        base_analysis['video_metadata'] = {
+            'total_frames': total_frames,
+            'fps': round(fps, 2),
+            'duration_seconds': round(duration, 2),
+            'analyzed_frames': len(frame_analyses)
+        }
+        
+        # Add audio analysis if available
+        if audio_analysis:
+            base_analysis['audio_analysis'] = audio_analysis
+        
+        # Update summary
+        base_analysis['summary'] = f"Video analysis: {total_frames} frames, {fps:.1f} FPS, {duration:.1f}s duration. " + base_analysis.get('summary', '')
+        
+        return base_analysis
+    
+    # Helper methods for audio analysis
+    def estimate_key(self, y, sr):
+        """Estimate musical key"""
+        try:
+            chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
+            key = np.argmax(np.sum(chroma, axis=1))
+            keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+            return keys[key % 12]
         except:
-            return ["#000000", "#666666", "#999999", "#cccccc", "#ffffff"]
+            return "Unknown"
+    
+    def analyze_chords(self, y, sr):
+        """Basic chord analysis"""
+        try:
+            chroma = librosa.feature.chroma_stft(y=y, sr=sr)
+            return {"chroma_features": [float(x) for x in np.mean(chroma, axis=1)]}
+        except:
+            return {}
+    
+    def separate_harmonics_percussive(self, y):
+        """Separate harmonic and percussive components"""
+        try:
+            y_harmonic, y_percussive = librosa.effects.hpss(y)
+            return {
+                "harmonic_strength": float(np.mean(y_harmonic)),
+                "percussive_strength": float(np.mean(y_percussive))
+            }
+        except:
+            return {}
+    
+    def calculate_audio_quality(self, features):
+        """Calculate audio quality score"""
+        try:
+            score = 0.0
+            if features.get('rms_energy', 0) > 0.01:
+                score += 0.3
+            if features.get('duration_seconds', 0) > 1.0:
+                score += 0.3
+            if features.get('spectral_centroid', 0) > 1000:
+                score += 0.2
+            if len(features.get('mfcc_features', [])) > 0:
+                score += 0.2
+            return min(score, 1.0)
+        except:
+            return 0.5
+    
+    def _transcribe_audio_basic(self, audio_path):
+        """Basic speech recognition fallback"""
+        try:
+            r = sr.Recognizer()
+            with sr.AudioFile(audio_path) as source:
+                audio = r.record(source)
+            return r.recognize_google(audio, language='fr-FR')
+        except:
+            return ""
+    
+    # Existing helper methods (keep these from your original code)
+    def analyze_image_quality_advanced(self, img):
+        """Enhanced image quality analysis"""
+        # Your existing implementation
+        return self.analyze_image_quality(img)
+    
+    def analyze_colors_advanced(self, img):
+        """Enhanced color analysis"""
+        # Your existing implementation  
+        return self.analyze_colors(img)
+    
+    def detect_faces_opencv(self, img):
+        """OpenCV face detection fallback"""
+        # Your existing implementation
+        return super().detect_faces_opencv(img)
     
     def get_technical_metadata(self, img):
-        """Extract technical metadata from image"""
-        try:
-            height, width, channels = img.shape
-            return {
-                'dimensions': f"{width}x{height}",
-                'channels': channels,
-                'file_size_estimate': width * height * channels,
-                'aspect_ratio': round(width / height, 2)
-            }
-        except:
-            return {}
+        """Get technical metadata"""
+        # Your existing implementation
+        return super().get_technical_metadata(img)
     
-    def generate_image_summary(self, analysis):
-        """Generate comprehensive image analysis summary"""
+    def get_used_models(self):
+        """Get list of used AI models"""
+        models = []
+        if self.ai_models.get('yolo'):
+            models.append('YOLOv8')
+        if TENSORFLOW_AVAILABLE:
+            models.append('EfficientNet')
+        if DEEPFACE_AVAILABLE:
+            models.append('DeepFace')
+        if TRANSFORMERS_AVAILABLE:
+            models.append('Transformers')
+        if self.ai_models.get('whisper_model'):
+            models.append('Whisper')
+        if self.ai_models.get('audio_emotion'):
+            models.append('Wav2Vec2')
+        
+        return models if models else ['OpenCV']
+    
+    def generate_comprehensive_summary(self, analysis):
+        """Generate comprehensive analysis summary"""
         parts = []
         
-        # Objects detected
+        # Objects
         if analysis['objects_detected']:
             top_objects = [obj['label'] for obj in analysis['objects_detected'][:3]]
-            parts.append(f"Objets détectés: {', '.join(top_objects)}")
+            parts.append(f"Objets: {', '.join(top_objects)}")
         
-        # Faces detected
+        # Faces
         if analysis['face_analysis']:
             face_count = len(analysis['face_analysis'])
             emotions = [face['emotion'] for face in analysis['face_analysis'][:2]]
             parts.append(f"{face_count} visage(s) - Émotions: {', '.join(emotions)}")
         
-        # Quality assessment
+        # Scene
+        if analysis['scene_analysis']:
+            scene = analysis['scene_analysis']['primary_scene']
+            confidence = analysis['scene_analysis']['confidence']
+            if confidence > 0.7:
+                parts.append(f"Scène: {scene}")
+        
+        # Quality
         quality = analysis['quality_metrics']
-        quality_parts = []
         if quality['overall_score'] > 0.8:
-            quality_parts.append("haute qualité")
+            parts.append("Haute qualité")
         elif quality['overall_score'] > 0.6:
-            quality_parts.append("bonne qualité")
-        else:
-            quality_parts.append("qualité moyenne")
+            parts.append("Bonne qualité")
         
-        if quality['sharpness'] > 300:
-            quality_parts.append("nette")
-        
-        if quality['brightness'] > 0.7:
-            quality_parts.append("lumineuse")
-        elif quality['brightness'] < 0.3:
-            quality_parts.append("sombre")
-        
-        if quality_parts:
-            parts.append(f"Image {', '.join(quality_parts)}")
-        
-        # Scene context
-        theme = analysis.get('theme', 'General')
-        if theme != 'General':
-            parts.append(f"Contexte: {theme}")
-        
-        return ". ".join(parts) if parts else "Analyse d'image complète effectuée"
+        return ". ".join(parts) if parts else "Analyse complète effectuée"
     
-    def generate_image_tags(self, analysis):
-        """Generate relevant tags for the image"""
+    def generate_advanced_tags(self, analysis):
+        """Generate advanced tags from comprehensive analysis"""
         tags = set()
         
-        # Add object tags
+        # Object tags
         for obj in analysis['objects_detected'][:5]:
             tags.add(obj['label'].replace('_', ' '))
         
-        # Add face-related tags
+        # Face tags
         if analysis['face_analysis']:
             tags.add('person')
             tags.add('face')
             for face in analysis['face_analysis'][:2]:
                 tags.add(face['emotion'])
                 tags.add(face['gender'])
-                tags.add(face['age'])
         
-        # Add quality tags
+        # Scene tags
+        if analysis['scene_analysis']:
+            tags.add(analysis['scene_analysis']['primary_scene'].lower())
+        
+        # Quality tags
         quality = analysis['quality_metrics']
         if quality['overall_score'] > 0.8:
             tags.add('high quality')
         if quality['sharpness'] > 300:
             tags.add('sharp')
-        if quality['brightness'] > 0.7:
-            tags.add('bright')
         
-        # Add theme tag
-        tags.add(analysis.get('theme', 'general').lower())
-        
-        # Add technical tags
+        # AI tags
         tags.add('ai analyzed')
         tags.add('computer vision')
+        tags.add('deep learning')
         
-        return list(tags)[:10]
+        return list(tags)[:15]
     
-    def determine_theme(self, analysis):
-        """Determine the main theme of the image"""
-        objects = [obj['label'] for obj in analysis['objects_detected']]
-        object_str = ' '.join(objects).lower()
+    def determine_advanced_theme(self, analysis):
+        """Determine advanced theme"""
+        # Your existing implementation enhanced with new data
+        return self.determine_theme(analysis)
+    
+    def generate_audio_summary(self, analysis):
+        """Generate audio analysis summary"""
+        parts = []
         
-        # Theme detection based on objects
-        if any(obj in object_str for obj in ['person', 'face']):
-            if len(analysis['face_analysis']) > 2:
-                return "Group Portrait"
-            else:
-                return "Portrait"
-        elif any(obj in object_str for obj in ['car', 'bus', 'truck', 'motorcycle']):
-            return "Transportation"
-        elif any(obj in object_str for obj in ['building', 'house', 'skyscraper']):
-            return "Architecture"
-        elif any(obj in object_str for obj in ['tree', 'grass', 'mountain', 'sky']):
-            return "Nature"
-        elif any(obj in object_str for obj in ['computer', 'keyboard', 'mouse']):
-            return "Technology"
+        basic = analysis['basic_features']
+        speech = analysis['speech_analysis']
+        emotion = analysis['emotion_analysis']
+        
+        parts.append(f"Durée: {basic['duration_seconds']}s")
+        
+        if basic['tempo_bpm'] > 0:
+            parts.append(f"Tempo: {basic['tempo_bpm']} BPM")
+        
+        if speech.get('transcript'):
+            parts.append(f"Transcription: {speech['transcript'][:100]}...")
+        
+        if emotion.get('emotion') != 'neutral':
+            parts.append(f"Émotion: {emotion['emotion']}")
+        
+        return ". ".join(parts)
+    
+    def generate_audio_tags(self, analysis):
+        """Generate audio-specific tags"""
+        tags = set()
+        
+        basic = analysis['basic_features']
+        speech = analysis['speech_analysis']
+        emotion = analysis['emotion_analysis']
+        
+        tags.add('audio')
+        
+        if basic['duration_seconds'] > 60:
+            tags.add('long')
         else:
-            return "General"
+            tags.add('short')
+            
+        if basic['tempo_bpm'] > 120:
+            tags.add('fast')
+        elif basic['tempo_bpm'] < 80:
+            tags.add('slow')
+            
+        if speech.get('transcript'):
+            tags.add('speech')
+            tags.add('voice')
+        else:
+            tags.add('music')
+            tags.add('instrumental')
+            
+        tags.add(emotion.get('emotion', 'neutral'))
+        tags.add('ai analyzed')
+        
+        return list(tags)
     
-    def analyze_video(self, file):
-        """Video analysis implementation"""
-        # Simplified video analysis
-        return {
-            'media_type': 'video',
-            'quality_score': 0.7,
-            'theme': 'Video Content',
-            'tags': ['video', 'media', 'motion'],
-            'summary': 'Video file analyzed - basic metadata extracted',
-            'ai_models_used': ['OpenCV'],
-            'analysis_timestamp': datetime.now().isoformat()
-        }
-    
-    def analyze_audio(self, file):
-        """Audio analysis implementation"""
-        # Simplified audio analysis
-        return {
-            'media_type': 'audio',
-            'quality_score': 0.6,
-            'theme': 'Audio Content',
-            'tags': ['audio', 'sound', 'media'],
-            'summary': 'Audio file analyzed - basic features extracted',
-            'ai_models_used': ['Librosa'],
-            'analysis_timestamp': datetime.now().isoformat()
-        }
+    def determine_audio_theme(self, analysis):
+        """Determine audio theme"""
+        speech = analysis['speech_analysis']
+        emotion = analysis['emotion_analysis']
+        
+        if speech.get('transcript'):
+            return f"Speech - {emotion.get('emotion', 'Neutral')}"
+        else:
+            return f"Music - {emotion.get('emotion', 'Neutral')}"
     
     def get_basic_analysis(self, file):
         """Fallback basic analysis"""
