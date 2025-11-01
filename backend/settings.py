@@ -23,15 +23,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-'media_app',
+    'media_app',
 
     # Libs
     'rest_framework',
     'corsheaders',
-'rest_framework_simplejwt.token_blacklist',
+    'rest_framework_simplejwt.token_blacklist',
     # Tes applications
     'accounts',
     'projects',
+    'generation_multimedia',
 ]
 
 # -----------------------------

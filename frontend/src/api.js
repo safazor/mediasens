@@ -13,7 +13,8 @@ api.interceptors.request.use((config) => {
     config.url.includes("/api/auth/login/") ||
     config.url.includes("/api/auth/register/") ||
     config.url.includes("/api/auth/refresh/") ||
-    config.url.includes("/api/chat/"); // ✅ Ajout du chatbot ici
+    config.url.includes("/api/chat/") || // ✅ chatbot
+    config.url.includes("/api/generation/"); // ✅ endpoints publics (génération & récents)
 
   if (access && !isPublic) {
     config.headers.Authorization = `Bearer ${access}`;

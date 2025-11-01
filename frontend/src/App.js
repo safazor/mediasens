@@ -1,10 +1,7 @@
 /* Landing page style "Open" (Cruip-like) — Mediasens */
 import React from "react";
 // ⬆️ tout en haut de ton fichier App.js
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
-import UploadPage from "./pages/UploadPage";
+// App is the landing page; routing is configured in src/index.js
 import Chatbot from "./components/Chatbot";
 
 const Container = ({ children }) => (
@@ -19,11 +16,12 @@ const Nav = () => (
           <span className="inline-flex h-8 w-8 rounded-lg bg-gradient-to-tr from-purple-500 via-indigo-500 to-blue-500"></span>
           <span className="text-white font-bold text-lg tracking-wide">Mediasens</span>
         </div>
-        <ul className="hidden md:flex items-center gap-8 text-sm text-white/80">
+  <ul className="hidden md:flex items-center gap-8 text-sm text-white/80">
           <li><a href="#features" className="hover:text-white">Fonctionnalités</a></li>
             <li><a href="/register" className="hover:text-white">S’inscrire</a></li>
   <li><a href="/login" className="hover:text-white">Connexion</a></li>
   <li><a href="/upload" className="hover:text-white">Module 1</a></li>
+  <li><a href="/generation" className="hover:text-white">Génération IA</a></li>
           <li><a href="#how" className="hover:text-white">Comment ça marche</a></li>
           <li><a href="#cta" className="hover:text-white">Commencer</a></li>
         </ul>
@@ -184,7 +182,7 @@ const CTA = () => (
           Créez votre premier projet en quelques secondes.
         </p>
         <a
-          href="#"
+          href="#cta"
           className="inline-block mt-6 px-6 py-3 rounded-xl bg-white text-black font-semibold hover:opacity-90 transition"
         >
           Créer un projet
@@ -203,9 +201,9 @@ const Footer = () => (
           <span className="text-white/80 text-sm">© {new Date().getFullYear()} Mediasens</span>
         </div>
         <ul className="flex items-center gap-6 text-sm text-white/70">
-          <li><a href="#" className="hover:text-white">Confidentialité</a></li>
-          <li><a href="#" className="hover:text-white">Conditions</a></li>
-          <li><a href="#" className="hover:text-white">Contact</a></li>
+          <li><a href="/privacy" className="hover:text-white">Confidentialité</a></li>
+          <li><a href="/terms" className="hover:text-white">Conditions</a></li>
+          <li><a href="/contact" className="hover:text-white">Contact</a></li>
         </ul>
       </div>
     </Container>
@@ -214,42 +212,15 @@ const Footer = () => (
 
 export default function App() {
   return (
-      <Routes>
-        {/* --- Landing Page --- */}
-        <Route
-          path="/"
-          element={
-            <div className="bg-black text-white">
-              <Nav />
-              <Hero />
-              <Features />
-              <How />
-              <CTA />
-              <Footer />
-              {/* ✅ Chatbot présent ici */}
-              <Chatbot />
-            </div>
-          }
-        />
-
-        {/* --- Register --- */}
-        <Route path="/register" element={<Register />} />
-
-        {/* --- Login --- */}
-        <Route path="/login" element={<Login />} />
-
-        {/* --- Upload --- */}
-        <Route
-          path="/upload"
-          element={
-            <>
-              <UploadPage />
-              {/* ✅ Chatbot aussi ici */}
-              <Chatbot />
-            </>
-          }
-        />
-      </Routes>
+    <div className="bg-black text-white">
+      <Nav />
+      <Hero />
+      <Features />
+      <How />
+      <CTA />
+      <Footer />
+      <Chatbot />
+    </div>
   );
 }
 

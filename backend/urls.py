@@ -28,6 +28,8 @@ urlpatterns = [
     path('api/auth/me/', MeView.as_view(), name='me'),
     path('api/auth/logout/', LogoutView.as_view(), name='logout'),
     path('api/chat/', ChatView.as_view(), name='chat'),
+    # Generation Multimédia
+    path('api/generation/', include('generation_multimedia.urls')),
 ]
 
 if settings.DEBUG:
