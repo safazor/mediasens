@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 'media_app',
+'editing_app',
 
     # Libs
     'rest_framework',
